@@ -391,6 +391,18 @@ func handleGetBlockTemplate(c *gin.Context, bodyAsByteArray []byte) {
 
 func updateTariBlockCache(milieu *core.Milieu) {
 	blockTemplateCache.UpdateBlockTemplateCache(milieu)
+
+	// Log the current target difficulty for both algos on every poll tick, regardless of whether the tip block
+	// height has changed, so LWMA backoff-doubling behavior can be watched live.
+	sha3xHeight, sha3xTarget, sha3xOk := blockTemplateCache.GetSha3xTargetDifficulty()
+	rxHeight, rxTarget, rxOk := blockTemplateCache.GetRandomXTargetDifficulty()
+	if sha3xOk && rxOk {
+		milieu.Info(fmt.Sprintf("SHA3X target difficulty: %v @ height %v | RandomXT target difficulty: %v @ height %v",
+			sha3xTarget, sha3xHeight, rxTarget, rxHeight))
+	} else {
+		milieu.Info("Target difficulty not yet populated")
+	}
+
 	blockData, err := blockTemplateCache.GetBlockRandomX(poolMinerID, tariPoolPayoutAddress)
 	if err != nil {
 		milieu.CaptureException(err)

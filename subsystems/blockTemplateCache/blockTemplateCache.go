@@ -22,9 +22,11 @@ var PoolStringID *[]byte
 // GetNewBlockTemplateWithCoinbasesRequest that is sent to the Tari daemon, this is needed to build the base coinbase
 // transaction, which needs to contain the pool ID and other data related to the miner unique nonce.
 type blockTemplateCacheStruct struct {
-	blockTemplate *tari_generated.NewBlockTemplate
-	reward        uint64
-	mutex         sync.RWMutex
+	blockTemplate    *tari_generated.NewBlockTemplate
+	reward           uint64
+	targetDifficulty uint64
+	height           uint64
+	mutex            sync.RWMutex
 }
 
 var sha3xBTCache *blockTemplateCacheStruct = nil
@@ -60,6 +62,10 @@ func UpdateBlockTemplateCache(core *milieu.Milieu) {
 	sha3xBTCache.mutex.Lock()
 	sha3xBTCache.blockTemplate = blockTemplateResponse.GetNewBlockTemplate()
 	sha3xBTCache.reward = blockTemplateResponse.MinerData.Reward
+	sha3xBTCache.targetDifficulty = blockTemplateResponse.MinerData.TargetDifficulty
+	if sha3xBTCache.blockTemplate != nil && sha3xBTCache.blockTemplate.Header != nil {
+		sha3xBTCache.height = sha3xBTCache.blockTemplate.Header.Height
+	}
 	sha3xBTCache.mutex.Unlock()
 
 	blockTemplateResponse, err = nodeGRPC.GetBlockTemplate(&tari_generated.PowAlgo{PowAlgo: tari_generated.PowAlgo_POW_ALGOS_RANDOMXT})
@@ -73,7 +79,33 @@ func UpdateBlockTemplateCache(core *milieu.Milieu) {
 	rxBTCache.mutex.Lock()
 	rxBTCache.blockTemplate = blockTemplateResponse.GetNewBlockTemplate()
 	rxBTCache.reward = blockTemplateResponse.MinerData.Reward
+	rxBTCache.targetDifficulty = blockTemplateResponse.MinerData.TargetDifficulty
+	if rxBTCache.blockTemplate != nil && rxBTCache.blockTemplate.Header != nil {
+		rxBTCache.height = rxBTCache.blockTemplate.Header.Height
+	}
 	rxBTCache.mutex.Unlock()
+}
+
+// GetSha3xTargetDifficulty returns the height and target difficulty currently cached for the SHA3X algo's block
+// template. ok is false if the cache has not been populated yet (e.g. before the first successful poll).
+func GetSha3xTargetDifficulty() (height uint64, target uint64, ok bool) {
+	if sha3xBTCache == nil {
+		return 0, 0, false
+	}
+	sha3xBTCache.mutex.RLock()
+	defer sha3xBTCache.mutex.RUnlock()
+	return sha3xBTCache.height, sha3xBTCache.targetDifficulty, true
+}
+
+// GetRandomXTargetDifficulty returns the height and target difficulty currently cached for the RandomXT algo's
+// block template. ok is false if the cache has not been populated yet (e.g. before the first successful poll).
+func GetRandomXTargetDifficulty() (height uint64, target uint64, ok bool) {
+	if rxBTCache == nil {
+		return 0, 0, false
+	}
+	rxBTCache.mutex.RLock()
+	defer rxBTCache.mutex.RUnlock()
+	return rxBTCache.height, rxBTCache.targetDifficulty, true
 }
 
 // GetBlockRandomX uses the block template cache to call GetBlockWithCoinbases with the miner ID as well as the
