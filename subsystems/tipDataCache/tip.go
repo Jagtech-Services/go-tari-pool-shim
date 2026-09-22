@@ -1,6 +1,7 @@
 package tipDataCache
 
 import (
+	"context"
 	"sync"
 
 	"github.com/Snipa22/core-go-lib/milieu"
@@ -25,7 +26,7 @@ func UpdateTipData(core *milieu.Milieu) {
 	defer func() {
 		running = false
 	}()
-	tipResponse, err := nodeGRPC.GetTipInfo()
+	tipResponse, err := nodeGRPC.GetTipInfo(context.Background())
 	if err != nil {
 		core.Debug(err.Error())
 		core.CaptureException(err)

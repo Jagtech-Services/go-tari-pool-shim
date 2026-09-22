@@ -1,6 +1,7 @@
 package blockTemplateCache
 
 import (
+	"context"
 	"encoding/binary"
 	"math/rand"
 	"sync"
@@ -48,7 +49,7 @@ func UpdateBlockTemplateCache(core *milieu.Milieu) {
 		poolID = &buf
 	}
 
-	blockTemplateResponse, err := nodeGRPC.GetBlockTemplate(&tari_generated.PowAlgo{PowAlgo: tari_generated.PowAlgo_POW_ALGOS_SHA3X})
+	blockTemplateResponse, err := nodeGRPC.GetBlockTemplate(context.Background(), &tari_generated.PowAlgo{PowAlgo: tari_generated.PowAlgo_POW_ALGOS_SHA3X})
 	if err != nil {
 		core.CaptureException(err)
 		return
@@ -62,7 +63,7 @@ func UpdateBlockTemplateCache(core *milieu.Milieu) {
 	sha3xBTCache.reward = blockTemplateResponse.MinerData.Reward
 	sha3xBTCache.mutex.Unlock()
 
-	blockTemplateResponse, err = nodeGRPC.GetBlockTemplate(&tari_generated.PowAlgo{PowAlgo: tari_generated.PowAlgo_POW_ALGOS_RANDOMXT})
+	blockTemplateResponse, err = nodeGRPC.GetBlockTemplate(context.Background(), &tari_generated.PowAlgo{PowAlgo: tari_generated.PowAlgo_POW_ALGOS_RANDOMXT})
 	if err != nil {
 		core.CaptureException(err)
 		return
@@ -184,7 +185,7 @@ func GetBlockRandomX(minerID []byte, poolAddress string) (*tari_generated.GetNew
 	}
 
 	// Get the block data w/ the coinbases
-	return nodeGRPC.GetBlockWithCoinbases(&tari_generated.GetNewBlockWithCoinbasesRequest{
+	return nodeGRPC.GetBlockWithCoinbases(context.Background(), &tari_generated.GetNewBlockWithCoinbasesRequest{
 		NewTemplate: localBT,
 		Coinbases:   coinbaseData,
 	})
