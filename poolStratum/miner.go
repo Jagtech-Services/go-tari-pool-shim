@@ -1,6 +1,7 @@
 package poolStratum
 
 import (
+	"context"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
@@ -489,7 +490,7 @@ func (m *minerStruct) SubmitJob(jsonData json.RawMessage) {
 		}
 		go m.CleanMinerJobs()
 
-		_, err = nodeGRPC.SubmitBlock(job.BlockResult.Block)
+		_, err = nodeGRPC.SubmitBlock(context.Background(), job.BlockResult.Block)
 		if err != nil {
 			// Submit share to backend as valid, but non-block find.
 			m.hashes += job.Target

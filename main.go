@@ -137,7 +137,7 @@ type getLastBlockHeaderResult struct {
 func handleGetLastBlockHeader(c *gin.Context) {
 	milieu := middleware.MustGetMilieu(c)
 	tipData := tipDataCache.GetTipData()
-	blocks, err := nodeGRPC.GetBlockByHeight([]uint64{tipData.Metadata.BestBlockHeight})
+	blocks, err := nodeGRPC.GetBlockByHeight(c.Request.Context(), []uint64{tipData.Metadata.BestBlockHeight})
 	if err != nil {
 		milieu.CaptureException(err)
 		milieu.Info(err.Error())
@@ -145,14 +145,14 @@ func handleGetLastBlockHeader(c *gin.Context) {
 		return
 	}
 	block := blocks[0]
-	netDiff, err := nodeGRPC.GetNetworkDiff(tipData.Metadata.BestBlockHeight)
+	netDiff, err := nodeGRPC.GetNetworkDiff(c.Request.Context(), tipData.Metadata.BestBlockHeight)
 	if err != nil {
 		milieu.CaptureException(err)
 		milieu.Info(err.Error())
 		c.Status(500)
 		return
 	}
-	blockHeader, err := nodeGRPC.GetHeaderByHash(tipData.Metadata.BestBlockHash)
+	blockHeader, err := nodeGRPC.GetHeaderByHash(c.Request.Context(), tipData.Metadata.BestBlockHash)
 	if err != nil {
 		milieu.CaptureException(err)
 		milieu.Info(err.Error())
@@ -209,13 +209,13 @@ func handleGetBlockHeaderByHash(c *gin.Context, bodyAsByteArray []byte) {
 		c.Status(400)
 		return
 	}
-	blockHeader, err := nodeGRPC.GetHeaderByHash(blockHash)
+	blockHeader, err := nodeGRPC.GetHeaderByHash(c.Request.Context(), blockHash)
 	if err != nil {
 		milieu.Info(err.Error())
 		c.Status(500)
 		return
 	}
-	netDiff, err := nodeGRPC.GetNetworkDiff(blockHeader.Header.Height)
+	netDiff, err := nodeGRPC.GetNetworkDiff(c.Request.Context(), blockHeader.Header.Height)
 	if err != nil {
 		milieu.Info(err.Error())
 		c.Status(500)
@@ -286,7 +286,7 @@ func handleSubmitBlock(c *gin.Context, bodyAsByteArray []byte) {
 		blockData := v.Block
 		blockData.Header.Nonce = uint64(binary.BigEndian.Uint32(rawTariBt[39:43]))
 		blockData.Header.Pow.PowData = rawTariBt[44:76]
-		if blockResp, err := nodeGRPC.SubmitBlock(blockData); err != nil {
+		if blockResp, err := nodeGRPC.SubmitBlock(c.Request.Context(), blockData); err != nil {
 			milieu.CaptureException(err)
 			c.JSON(400, rpcResultError{
 				Jsonrpc: "2.0",
