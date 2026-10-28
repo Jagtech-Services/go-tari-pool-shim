@@ -9,7 +9,7 @@ Instructions for AI coding agents (OpenCode, Claude Code, or any `agents.md`-com
 ## Project
 
 - **What this repo is:** Stratum/pool shim layer for Tari mining pool integration.
-- **Module path:** `github.com/snipa22/go-tari-pool-shim`
+- **Module path:** `github.com/Jagtech-Services/go-tari-pool-shim`
 - **Depends on:** `go-tari-grpc-lib` (GRPC wrapper), `go-tari-lib` (helpers, if used), `core-go-lib` (shared utilities)
 
 ## Commands
