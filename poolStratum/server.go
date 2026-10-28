@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	core "github.com/Snipa22/core-go-lib/milieu"
-	"github.com/snipa22/go-tari-pool-shim/subsystems/config"
-	"github.com/snipa22/go-tari-pool-shim/subsystems/messages"
+	core "github.com/Jagtech-Services/core-go-lib/milieu"
+	"github.com/Jagtech-Services/go-tari-pool-shim/subsystems/config"
+	"github.com/Jagtech-Services/go-tari-pool-shim/subsystems/messages"
 )
 
 const httpDummy = ` 200 OK

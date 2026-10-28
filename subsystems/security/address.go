@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/snipa22/go-tari-pool-shim/subsystems/config"
+	"github.com/Jagtech-Services/go-tari-pool-shim/subsystems/config"
 )
 
 func ValidateAddress(address string) error {
